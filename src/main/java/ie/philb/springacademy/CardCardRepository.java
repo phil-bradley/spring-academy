@@ -5,11 +5,12 @@
 package ie.philb.springacademy;
 
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 /**
  *
  * @author Phil
  */
-public interface CardCardRepository extends CrudRepository<CashCard, Long> {
-    
+public interface CardCardRepository extends CrudRepository<CashCard, Long>, PagingAndSortingRepository<CashCard, Long> {
+
 }
