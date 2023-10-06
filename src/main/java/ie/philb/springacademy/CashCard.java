@@ -10,6 +10,6 @@ import org.springframework.data.annotation.Id;
  *
  * @author Phil
  */
-public record CashCard (@Id Long id, Double amount) {
+public record CashCard (@Id Long id, Double amount, String owner) {
     
 }
