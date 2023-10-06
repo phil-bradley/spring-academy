@@ -28,6 +28,7 @@ class CashCardApplicationTests {
 
     @Test
     public void shouldReturnACashCardWhenDataIsSaved() {
+
         ResponseEntity<String> response = restTemplate
                 .withBasicAuth("sarah1", "abc123")
                 .getForEntity("/cashcards/99", String.class);
@@ -210,16 +211,49 @@ class CashCardApplicationTests {
         assertThat(amount).isEqualTo(19.99);
     }
 
+    @Test
     public void shouldNotUpdateCashCardThatDoesNotExist() {
 
         CashCard unknownCard = new CashCard(null, 456.78, "sarah1");
 
         HttpEntity<CashCard> request = new HttpEntity<>(unknownCard);
         ResponseEntity<Void> response = restTemplate
-                .withBasicAuth("", "")
+                .withBasicAuth("sarah1", "abc123")
                 .exchange("/cashcards/99999", HttpMethod.PUT, request, Void.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
 
+    @Test
+    @DirtiesContext
+    public void shouldDeleteAnExistingCashCard() {
+
+        ResponseEntity<Void> response = restTemplate
+                .withBasicAuth("sarah1", "abc123")
+                .exchange("/cashcards/99", HttpMethod.DELETE, null, Void.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
+
+        ResponseEntity<String> getResponse = restTemplate
+                .withBasicAuth("sarah1", "abc123")
+                .getForEntity("/cashcards/99", String.class);
+
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+    }
+
+    @Test
+    public void shouldNotAllowDeletingCashCardNotOwned() {
+
+        ResponseEntity<Void> response = restTemplate
+                .withBasicAuth("sarah1", "abc123")
+                .exchange("/cashcards/102", HttpMethod.DELETE, null, Void.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+
+        ResponseEntity<String> getResponse = restTemplate
+                .withBasicAuth("kumar2", "xyz789")
+                .getForEntity("/cashcards/102", String.class);
+
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 }
