@@ -39,14 +39,13 @@ public class CashCardController {
     @GetMapping("/{id}")
     public ResponseEntity<CashCard> findById(@PathVariable Long id, Principal principal) {
 
-        String owner = principal.getName();
-        Optional<CashCard> result = Optional.ofNullable(cardCardRepository.findByIdAndOwner(id, owner));
+        CashCard cashCard = findCashCard(id, principal);
 
-        if (result.isEmpty()) {
+        if (cashCard == null) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(result.get());
+        return ResponseEntity.ok(cashCard);
     }
 
     @PostMapping
@@ -76,12 +75,19 @@ public class CashCardController {
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateCashCard(@PathVariable Long id, @RequestBody CashCard cardUpdate, Principal principal) {
 
-        String owner = principal.getName();
+        CashCard existing = findCashCard(id, principal);
 
-        CashCard existing = cardCardRepository.findByIdAndOwner(id, owner);
-        CashCard updated = new CashCard(existing.id(), cardUpdate.amount(), owner);
+        if (existing == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        CashCard updated = new CashCard(existing.id(), cardUpdate.amount(), existing.owner());
         cardCardRepository.save(updated);
 
         return ResponseEntity.noContent().build();
+    }
+
+    private CashCard findCashCard(Long id, Principal principal) {
+        return cardCardRepository.findByIdAndOwner(id, principal.getName());
     }
 }
